@@ -1,0 +1,262 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/JOHANDANIELORTEGONPA/TestSeason/1.0.0
+info:
+  description: This is the API set for the 
+  version: "1.0.0"
+  title: Season
+  contact:
+    email: johan.ortegon@amadeus.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: CRUD
+    description: CRUD operations for Season
+paths:
+
+  /seasons/save:
+    post:
+      tags:
+        - CRUD
+      summary: Save Season
+      operationId: saveSeason
+      description: |
+        By passing in the appropriate options, you can save a season in the system
+      requestBody:
+        description: Season
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeasonDTO'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonDTO'
+        '400':
+          description: Bad input parameter
+  /seasons/delete:
+    post:
+      tags:
+        - CRUD
+      summary: Delete season
+      operationId: deleteSeason
+      description: Delete season
+      security:
+        - MANAGE_SEASON_PLAN_FOR_RESOURCE_TYPE:
+            - APT
+            - ORG
+      requestBody:
+        description: Ids of seasons to delete
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                example: ["a17b0249-a15a-4b97-9e14-80079cd130e4"]
+      responses:
+        '200':
+          description: Message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output'
+  /seasons/list:
+    get:
+      tags:
+        - CRUD
+      summary: List seasons
+      operationId: listSeasons
+      description: Retrieve a list of seasons
+      responses:
+        '200':
+          description: A list of seasons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeasonDTO'
+        '400':
+          description: Bad input parameter
+components:
+  securitySchemes:
+    MANAGE_SEASON_PLAN_FOR_RESOURCE_TYPE:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://example.com/oauth/authorize
+          scopes:
+            APT: Access to APT resources
+            ORG: Access to ORG resources
+  schemas:
+    SeasonDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        begin:
+          type: string
+          format: date
+        end:
+          type: string
+          format: date
+        remarks:
+          type: string
+        curves:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CurveDTO'
+        seasonPlanSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonPlanSetDTO'
+        resourceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceType'
+        planIds:
+          type: object
+          additionalProperties:
+            type: string
+        type:
+          $ref: '#/components/schemas/SeasonType'
+        includeOnGroundFlights:
+          type: boolean
+        includeUndefinedEndInops:
+          type: boolean
+        referencePlanning:
+          type: boolean
+        usesReferencePlanning:
+          type: boolean
+      required:
+        - name
+        - begin
+        - end
+        - type
+    CurveDTO:
+      type: object
+      properties:
+        curve:
+          type: object
+          additionalProperties:
+            type: integer
+    SeasonPlanSetDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        kpiId:
+          type: string
+        optimizationFocus:
+          type: string
+        processedDays:
+          type: integer
+        totalDays:
+          type: integer
+        creationTime:
+          type: string
+          format: date-time
+        kpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonalPlanInfoAndKpiValues'
+        lastVisitsRefreshTime:
+          type: string
+          format: date-time
+        lastKpisComputationTime:
+          type: string
+          format: date-time
+        lastOptimizationTime:
+          type: string
+          format: date-time
+    SeasonalPlanInfoAndKpiValues:
+      type: object
+      properties:
+        id:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        kpis:
+          type: object
+          additionalProperties:
+            type: number
+    ResourceType:
+      type: object
+      properties:
+        name:
+          type: string
+        class:
+          type: string
+        classWithEvents:
+          type: string
+        allocationClass:
+          type: string
+        resourceTypeConfig:
+          $ref: '#/components/schemas/ResourceTypeConfig'
+    ResourceTypeConfig:
+      type: object
+      properties:
+        direction:
+          type: string
+        demandRules:
+          type: string
+        permissionSuffix:
+          type: string
+        sdsViewPermission:
+          type: string
+        immutableWithActuals:
+          type: string
+        considerOnGroundFlightsForPlan:
+          type: string
+        allocationsBeModifiedInExternalSource:
+          type: string
+        requiredFeatureActivatedCheckIfAllocationsBeModifiedInExternalSource:
+          type: string
+        originator:
+          type: string
+    SeasonType:
+      type: string
+      enum:
+        - SEASON
+        - PLANNING
+        - FORECAST
+    Output:
+      type: object
+      properties:
+        pings:
+          type: array
+          items:
+            type: string
+            format: date-time
+          description: List of ping timestamps
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutputMessage'
+          description: List of output messages
+    OutputMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message content
+        code:
+          type: integer
+          description: Message code
